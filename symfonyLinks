@@ -2,18 +2,31 @@ project opzetten
 
 https://symfony.com/doc/current/setup.html
 
+
 makerbundle
 
 https://symfony.com/doc/current/bundles/SymfonyMakerBundle/index.html
+
 
 login security 
 
 https://symfony.com/doc/current/security.html  
 
+
 registratie formulier
 
 https://symfony.com/doc/current/doctrine/registration_form.html
 
+
 encore voor scss/css en jquery
 
 https://symfony.com/doc/current/frontend/encore/installation.html
+
+
+ckeditor
+
+https://symfony.com/doc/current/bundles/FOSCKEditorBundle/installation.html
+
+
+
+
