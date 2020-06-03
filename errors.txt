@@ -15,9 +15,15 @@ error:
 solution:
   opnieuw het project opbouwen    !!ALTIJD MET EEN HOOFDLETTER BEGINNEN!!
 error: 
-
+  An exception has been thrown during the rendering of a template ("Notice: Array to string conversion").
 solution:
-
+ {% for role in user.roles %}
+     {{ role }} &nbsp;
+ {% endfor %}
 error: 
-
+  Fatal Error: Object of class could not be converted to string
 solution:
+  public function __toString() 
+  {
+      return (string) $this->name; 
+  }
