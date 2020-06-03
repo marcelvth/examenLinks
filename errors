@@ -1,0 +1,23 @@
+error: 
+  # unable to fetch the response from the backend: malformed MIME header: missing colon: %!!(MISSING)q(MISSING)#4 {main}
+solution:
+  missing .env
+error: 
+   Uncaught Error: Class 'Vich\UploaderBundle\VichUploaderBundle' not found (wanneer gehaald van github en niet lokaal is geinstalleerd)
+solution:
+  php bin/console doctrine:schema:update --force 
+error: 
+
+solution:
+
+error: 
+
+solution:
+
+error: 
+
+solution:
+
+error: 
+
+solution:
