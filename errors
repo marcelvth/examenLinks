@@ -7,13 +7,13 @@ error:
 solution:
   php bin/console doctrine:schema:update --force 
 error: 
-
+  Unable to find template "@WebProfiler" (looked into: C:\xampp\htdocs\. (oorzaak refactor heeft de extensies aangepast)
 solution:
-
+  handmatig alle .twig templates wijzigen
 error: 
-
+  Case mismatch between loaded and declared class names: "App\Entity\user" vs "App\Entity\User".
 solution:
-
+  opnieuw het project opbouwen    !!ALTIJD MET EEN HOOFDLETTER BEGINNEN!!
 error: 
 
 solution:
