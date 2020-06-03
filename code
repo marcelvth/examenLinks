@@ -1,5 +1,12 @@
 FIND OBJECTS
   findBy([],['id'=>'DESC'],4,0);
+  
+TO STRING FUNCTION
+
+  public function __toString()
+    {
+        return $this->getName();
+    }
  
 CART CONTROLLER
 
