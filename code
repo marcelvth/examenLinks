@@ -1,0 +1,4 @@
+find firts objects:
+  findBy([],['id'=>'DESC'],4,0);
+  
+
