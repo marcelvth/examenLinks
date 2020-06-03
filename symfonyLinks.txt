@@ -10,7 +10,13 @@ https://symfony.com/doc/current/bundles/SymfonyMakerBundle/index.html
 
 login security 
 
-https://symfony.com/doc/current/security.html  
+https://symfony.com/doc/current/security.html
+
+	
+login auth
+
+https://symfony.com/doc/current/security/form_login_setup.html
+
 
 
 registratie formulier
