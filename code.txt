@@ -315,6 +315,45 @@
                   url: 'gmail://username:password@localhost'
               #    spool: { type: 'memory' }
 
-      
-      
+##Make/remove admin function
+
+    add to crud User -> Usercontroller:
+    
+      use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+
+      /**
+       * @Route("/{id}/role", name="role_action", methods="GET|POST")
+       */
+      public function roleAction($id, UserRepository $userRepository): Response
+      {
+          $user = $userRepository->find($id);
+          $role = 'ROLE_ADMIN';
+          $roles = $user->getRoles();
+          if ($user) {
+              if (in_array($role, $roles)) {
+                  // $user->removeRole("ROLE_ADMIN");
+                  unset($roles[1]);
+                  $roles = array_values($roles);
+                  $user->setRoles($roles);
+              } else {
+                  //Set the admin role
+                  $roles[] = strtoupper($role);
+                  $user->setRoles($roles);
+              }
+              //Save it to the database
+              $this->getDoctrine()->getManager()->flush();
+          }
+          return $this->render('user/index.html.twig', [
+              'users' => $userRepository->findAll(),
+          ]);
+      }
+    
+    add to user/index.html.twig:
+    
+      <a href="{{ path('role_action', { 'id': user.id }) }}">
+          <button type="button" class="btn btn-xs btn-info">
+              {% if user.roles[1] is defined %}Remove Admin{% else %}Make Admin{% endif %}
+          </button> {#== "ROLE_ADMIN"#}
+      </a>
+  
 
