@@ -48,4 +48,5 @@ https://datatables.net/
 DomPDF
 
 https://github.com/dompdf/dompdf
+https://ourcodeworld.com/articles/read/799/how-to-create-a-pdf-from-html-in-symfony-4-using-dompdf
 
