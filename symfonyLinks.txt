@@ -35,6 +35,11 @@ ckeditor
 https://symfony.com/doc/current/bundles/FOSCKEditorBundle/installation.html
 
 
+VichUploader
+
+https://github.com/dustin10/VichUploaderBundle/blob/master/docs/index.md
+
+
 Datatabels
 
 https://datatables.net/
