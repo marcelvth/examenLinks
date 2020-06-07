@@ -27,3 +27,31 @@ solution:
   {
       return (string) $this->name; 
   }
+> The file "" does not contain valid YAML: Unable to parse at line x (near " - {entity: Betaling, icon: "th-list", permission: 'ROLE_ADMIN'}") in ... (which is loaded in resource "").
+##Oplossing: Er is niet goed genesteld, nestel alles op de goede tabs
+
+> The configuration of the menu item in the position x (being 0 the first item) must define at least one of these options: entity, url, route, label.
+##Oplossing: Regel staat niet goed in de lijst menu [easyAdminBundle]
+
+> Cannot increment/decement string offsets
+##Oplossing: $cart[$id] = intval($cart[$id]);
+
+> An exception occurred while executing 'INSERT INTO reservering (,,,,,) VALUES (?, ?, ?, ?, ?, ?)' with params ["2020-05-20 11:25:01", null, null, null, 1, null]:
+  SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'checkout_date' cannot be null
+##Oplossing: maak de aangegeven entity columns een voor een nullable in de annotation -> nullable=true
+	     Update je database na het bewerken van 1 column (voor de veiligheid, om te kijken of de column naam veranderd in de error) -> php bin/console doctrine:schema:update --force
+
+> Neither the property "updatedAt" nor one of the methods "getUpdatedAt()", "updatedAt()", "isUpdatedAt()",
+  "hasUpdatedAt()", "__get()" exist and have public access in class "App\Entity\Image".
+##Oplossing: Je bent fucked!! check of je alle image paths in de yaml, controller en entity files geoed hebt gedaan
+
+> An exception occurred while executing 'INSERT INTO seizoen (,,,,,) VALUES (?, ?, ?, ?)' with params ["Lente", "2020-03-01", "2020-05-31", 12.5]:
+  SQLSTATE[42S22]: Column not found: 1054 Unknown column 'korting' in 'field list'
+##Oplossing: update je database -> php bin/console doctrine:schema:update --force
+
+> App\Entity\User object not found by @paramConverter annotation
+##Oplossing: pas de controller aan, vergeet de elementen niet in een @param te gooien, die je mee geeft en wilt displayen //////////mogelijk niet juist
+
+> Unable to guess how to get a Doctrine instance from the request information for <b>param</b>eter "betaling". (500 Internal Server Error)
+##Oplossing: selecteren van entities is niet goed, selecteer op andere manier of selecteren is niet mogelijk
+

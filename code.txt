@@ -1,194 +1,359 @@
-FIND OBJECTS
+##FIND OBJECTS
   findBy([],['id'=>'DESC'],4,0);
   
-TO STRING FUNCTION
+##TO STRING FUNCTION
 
   public function __toString()
     {
         return $this->getName();
     }
  
-CART CONTROLLER
+##CART CONTROLLER
+    <?php
 
+    namespace WebshopBundle\Controller;
 
-<?php
+    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+    use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+    use WebshopBundle\Entity\Factuur;
+    use WebshopBundle\Entity\Producten;
+    use WebshopBundle\Entity\Regel;
+    use WebshopBundle\Entity\User;
 
-namespace WebshopBundle\Controller;
-
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use WebshopBundle\Entity\Factuur;
-use WebshopBundle\Entity\Producten;
-use WebshopBundle\Entity\Regel;
-use WebshopBundle\Entity\User;
-
-/**
- * Cart controller.
- *
- * @Route("cart")
- */
-class CartController extends Controller
-{
     /**
-     * @Route("/", name="cart")
+     * Cart controller.
+     *
+     * @Route("cart")
      */
-    public function indexAction()
+    class CartController extends Controller
     {
-        // get the cart from  the session
-        $session = $this->get('request_stack')->getCurrentRequest()->getSession();
-        // $cart = $session->set('cart', '');
-        $cart = $session->get('cart', array());
+        /**
+         * @Route("/", name="cart")
+         */
+        public function indexAction()
+        {
+            // get the cart from  the session
+            $session = $this->get('request_stack')->getCurrentRequest()->getSession();
+            // $cart = $session->set('cart', '');
+            $cart = $session->get('cart', array());
 
-        // $cart = array_keys($cart);
-        // print_r($cart); die;
+            // $cart = array_keys($cart);
+            // print_r($cart); die;
 
-        // fetch the information using query and ids in the cart
-        if ($cart != '') {
+            // fetch the information using query and ids in the cart
+            if ($cart != '') {
 
 
-            if (isset($cart)) {
-                $em = $this->getDoctrine()->getEntityManager();
-                $product = $em->getRepository('WebshopBundle:Producten')->findAll();
+                if (isset($cart)) {
+                    $em = $this->getDoctrine()->getEntityManager();
+                    $product = $em->getRepository('WebshopBundle:Producten')->findAll();
+                } else {
+                    return $this->render('@Webshop/Cart/index.html.twig', array(
+                        'empty' => true,
+                    ));
+                }
+
+
+                return $this->render('@Webshop/Cart/index.html.twig', array(
+                    'empty' => false,
+                    'product' => $product,
+                ));
             } else {
                 return $this->render('@Webshop/Cart/index.html.twig', array(
                     'empty' => true,
                 ));
             }
-
-
-            return $this->render('@Webshop/Cart/index.html.twig', array(
-                'empty' => false,
-                'product' => $product,
-            ));
-        } else {
-            return $this->render('@Webshop/Cart/index.html.twig', array(
-                'empty' => true,
-            ));
         }
-    }
 
-    /**
-     * @Route("/add/{id}", name="cart_add")
-     */
-    public function addAction($id)
-    {
-        // fetch the cart
-        $em = $this->getDoctrine()->getManager();
-        $product = $em->getRepository('WebshopBundle:Producten')->find($id);
-        //print_r($product->getId()); die;
-        $session = $this->get('request_stack')->getCurrentRequest()->getSession();
-        $cart = $session->get('cart', array());
+        /**
+         * @Route("/add/{id}", name="cart_add")
+         */
+        public function addAction($id)
+        {
+            // fetch the cart
+            $em = $this->getDoctrine()->getManager();
+            $product = $em->getRepository('WebshopBundle:Producten')->find($id);
+            //print_r($product->getId()); die;
+            $session = $this->get('request_stack')->getCurrentRequest()->getSession();
+            $cart = $session->get('cart', array());
 
-        // check if the $id already exists in it.
-        if ($product == NULL) {
-            $this->get('session')->setFlash('notice', 'This product is not     available in Stores');
-            return $this->redirect($this->generateUrl('cart'));
-        } else {
-            if (isset($cart[$id])) {
-
-                ++$cart[$id];
-                /*  $qtyAvailable = $product->getQuantity();
-                  if ($qtyAvailable >= $cart[$id]['quantity'] + 1) {
-                      $cart[$id]['quantity'] = $cart[$id]['quantity'] + 1;
-                  } else {
-                      $this->get('session')->setFlash('notice', 'Quantity     exceeds the available stock');
-                      return $this->redirect($this->generateUrl('cart'));
-                  } */
+            // check if the $id already exists in it.
+            if ($product == NULL) {
+                $this->get('session')->setFlash('notice', 'This product is not     available in Stores');
+                return $this->redirect($this->generateUrl('cart'));
             } else {
-                // if it doesnt make it 1
-                $cart[$id] = 1;
-                //$cart[$id]['quantity'] = 1;
+                if (isset($cart[$id])) {
+
+                    ++$cart[$id];
+                    /*  $qtyAvailable = $product->getQuantity();
+                      if ($qtyAvailable >= $cart[$id]['quantity'] + 1) {
+                          $cart[$id]['quantity'] = $cart[$id]['quantity'] + 1;
+                      } else {
+                          $this->get('session')->setFlash('notice', 'Quantity     exceeds the available stock');
+                          return $this->redirect($this->generateUrl('cart'));
+                      } */
+                } else {
+                    // if it doesnt make it 1
+                    $cart[$id] = 1;
+                    //$cart[$id]['quantity'] = 1;
+                }
+
+                $session->set('cart', $cart);
+                //echo('<pre>');
+                //print_r($cart); echo ('</pre>');die();
+                return $this->redirect($this->generateUrl('cart'));
+
+            }
+        }
+
+        /**
+         * @Route("/checkout", name="checkout")
+         */
+        public function checkoutAction()
+        {
+            // verwerken van regels in de nieuwe factuur voor de huidige klant.
+            $session = $this->get('request_stack')->getCurrentRequest()->getSession();
+            // $cart = $session->set('cart', '');
+            $cart = $session->get('cart', array());
+
+            // aanmaken factuur regel.
+            $em = $this->getDoctrine()->getManager();
+            $userAdress = $em->getRepository('WebshopBundle:User')->findOneBy(array('id' => $this->getUser()->getId()));
+
+            // new UserAdress if no UserAdress found...
+            if (!$userAdress) {
+                $userAdress = new User();
+                $userAdress->setId($this->getUser()->getId());
+            }
+
+            $factuur = new Factuur();
+            $factuur->setDatum(new \DateTime("now"));
+            $factuur->setKlantId($this->getUser());
+
+            //var_dump($cart);
+            // vullen regels met orderregels.
+            // put invoice in dbase.
+            if (isset($cart)) {
+                // $data = $this->get('request_stack')->getCurrentRequest()->request->all();
+                $em->persist($factuur);
+                $em->flush();
+                // put basket in dbase
+                foreach ($cart as $id => $quantity) {
+                    $regel = new Regel();
+                    $regel->setFactuurId($factuur);
+
+                    $em = $this->getDoctrine()->getManager();
+                    $product = $em->getRepository('WebshopBundle:Producten')->find($id);
+
+                    $regel->setAantal($quantity);
+                    $regel->setProductId($product);
+
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($regel);
+                    $em->flush();
+                }
+            }
+
+
+            $session->clear();
+            return $this->redirectToRoute('homepage');
+        }
+
+            /**
+         * @Route("/remove/{id}", name="cart_remove")
+         */
+        public function removeAction($id)
+        {
+            // check the cart
+            $session = $this->get('request_stack')->getCurrentRequest()->getSession();
+            $cart = $session->get('cart', array());
+
+            // if it doesn't exist redirect to cart index page. end
+            if(!$cart[$id]) { $this->redirect( $this->generateUrl('cart') ); }
+
+            // check if the $id already exists in it.
+            if( isset($cart[$id]) ) {
+                $cart[$id] = $cart[$id] - 1;
+                if ($cart[$id] < 1) {
+                    unset($cart[$id]);
+                }
+            } else {
+                return $this->redirect( $this->generateUrl('cart') );
             }
 
             $session->set('cart', $cart);
+
             //echo('<pre>');
             //print_r($cart); echo ('</pre>');die();
-            return $this->redirect($this->generateUrl('cart'));
 
-        }
-    }
-
-    /**
-     * @Route("/checkout", name="checkout")
-     */
-    public function checkoutAction()
-    {
-        // verwerken van regels in de nieuwe factuur voor de huidige klant.
-        $session = $this->get('request_stack')->getCurrentRequest()->getSession();
-        // $cart = $session->set('cart', '');
-        $cart = $session->get('cart', array());
-
-        // aanmaken factuur regel.
-        $em = $this->getDoctrine()->getManager();
-        $userAdress = $em->getRepository('WebshopBundle:User')->findOneBy(array('id' => $this->getUser()->getId()));
-
-        // new UserAdress if no UserAdress found...
-        if (!$userAdress) {
-            $userAdress = new User();
-            $userAdress->setId($this->getUser()->getId());
-        }
-
-        $factuur = new Factuur();
-        $factuur->setDatum(new \DateTime("now"));
-        $factuur->setKlantId($this->getUser());
-
-        //var_dump($cart);
-        // vullen regels met orderregels.
-        // put invoice in dbase.
-        if (isset($cart)) {
-            // $data = $this->get('request_stack')->getCurrentRequest()->request->all();
-            $em->persist($factuur);
-            $em->flush();
-            // put basket in dbase
-            foreach ($cart as $id => $quantity) {
-                $regel = new Regel();
-                $regel->setFactuurId($factuur);
-
-                $em = $this->getDoctrine()->getManager();
-                $product = $em->getRepository('WebshopBundle:Producten')->find($id);
-
-                $regel->setAantal($quantity);
-                $regel->setProductId($product);
-
-                $em = $this->getDoctrine()->getManager();
-                $em->persist($regel);
-                $em->flush();
-            }
-        }
-
-
-        $session->clear();
-        return $this->redirectToRoute('homepage');
-    }
-
-        /**
-     * @Route("/remove/{id}", name="cart_remove")
-     */
-    public function removeAction($id)
-    {
-        // check the cart
-        $session = $this->get('request_stack')->getCurrentRequest()->getSession();
-        $cart = $session->get('cart', array());
-
-        // if it doesn't exist redirect to cart index page. end
-        if(!$cart[$id]) { $this->redirect( $this->generateUrl('cart') ); }
-
-        // check if the $id already exists in it.
-        if( isset($cart[$id]) ) {
-            $cart[$id] = $cart[$id] - 1;
-            if ($cart[$id] < 1) {
-                unset($cart[$id]);
-            }
-        } else {
             return $this->redirect( $this->generateUrl('cart') );
         }
-
-        $session->set('cart', $cart);
-
-        //echo('<pre>');
-        //print_r($cart); echo ('</pre>');die();
-
-        return $this->redirect( $this->generateUrl('cart') );
     }
-}
+##Swiftmailer
+
+    composer require symfony/swiftmailer-bundle
+    
+    php bin/console make:form Contact
+    
+    #Vervang de Contact entity code
+    
+      <?php
+
+      namespace App\Form;
+
+      use Symfony\Component\Form\AbstractType;
+      use Symfony\Component\Form\Extension\Core\Type\EmailType;
+      use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+      use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+      use Symfony\Component\Form\Extension\Core\Type\TextType;
+      use Symfony\Component\Form\FormBuilderInterface;
+      use Symfony\Component\OptionsResolver\OptionsResolver;
+
+      class ContactType extends AbstractType
+      {
+          public function buildForm(FormBuilderInterface $builder, array $options)
+          {
+              $builder
+                  ->add('Uw_Naam', TextType::class)
+                  ->add('Uw_Email', EmailType::class)
+                  ->add('Onderwerp', TextType::class)
+                  ->add('Bericht', TextareaType::class)
+              ;
+          }
+
+          public function configureOptions(OptionsResolver $resolver)
+          {
+              $resolver->setDefaults([
+                  // Configure your form options here
+              ]);
+          }
+      }
+      
+#ContactController:
+      
+      php bin/console make:controller Contact
+      
+      #Vervang controller code:
+      
+          <?php
+          namespace App\Controller;
+
+          use App\Form\ContactType;
+          use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+          use Symfony\Component\HttpFoundation\Request;
+          use Symfony\Component\Routing\Annotation\Route;
+
+          class ContactController extends AbstractController
+          {
+              /**
+               * @Route("/contact", name="contact")
+               */
+              public function index(Request $request, \Swift_Mailer $mailer)
+              {
+                  $form = $this->createForm(ContactType::class);
+
+                  $form->handleRequest($request);
+
+                  if ($form->isSubmitted() && $form->isValid()) {
+
+                      $contactFormData = $form->getData();
+
+                      dump($contactFormData);
+
+                      $message = (new \Swift_Message($contactFormData['Onderwerp']))
+                          ->setFrom($contactFormData['Uw_Email'])
+                          ->setTo('je.email@gmail.com')
+                          ->setBody(
+                              $contactFormData['Bericht']
+                          );
+
+                      $mailer->send($message);
+
+                      $this->addFlash('success', 'Mail has been sent');
+
+                      return $this->redirectToRoute('contact');
+                  }
+
+                  return $this->render('contact/index.html.twig', [
+                      'form' => $form->createView()
+                  ]);
+              }
+          }
+      #edit twig template | templates > contact > index.html.twig:
+      
+        {% extends 'base.html.twig' %}
+
+        {% block title %}Contact Us{% endblock %}
+
+        {% block body %}
+            <div class="container mt-5">
+                <div>
+                    <h1><strong>Contact Us</strong></h1>
+                    <p>&nbsp;</p>
+                    {{ form_start(form) }}
+                    {{ form_widget(form) }}
+                    <div class="form-group row">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-10">
+                            <input type="submit" class="btn btn-primary" value="Verzenden" />
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        {% endblock %}
+        
+      #Edit mail conig | app > .env
+        
+        delete: 
+        
+              (r. 39): MAILER_URL=null://localhost
+        
+        add:
+              swiftmailer:
+                  url: 'gmail://username:password@localhost'
+              #    spool: { type: 'memory' }
+
+##Make/remove admin function
+
+    add to crud User -> Usercontroller:
+    
+      use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+
+      /**
+       * @Route("/{id}/role", name="role_action", methods="GET|POST")
+       */
+      public function roleAction($id, UserRepository $userRepository): Response
+      {
+          $user = $userRepository->find($id);
+          $role = 'ROLE_ADMIN';
+          $roles = $user->getRoles();
+          if ($user) {
+              if (in_array($role, $roles)) {
+                  // $user->removeRole("ROLE_ADMIN");
+                  unset($roles[1]);
+                  $roles = array_values($roles);
+                  $user->setRoles($roles);
+              } else {
+                  //Set the admin role
+                  $roles[] = strtoupper($role);
+                  $user->setRoles($roles);
+              }
+              //Save it to the database
+              $this->getDoctrine()->getManager()->flush();
+          }
+          return $this->render('user/index.html.twig', [
+              'users' => $userRepository->findAll(),
+          ]);
+      }
+    
+    add to user/index.html.twig:
+    
+      <a href="{{ path('role_action', { 'id': user.id }) }}">
+          <button type="button" class="btn btn-xs btn-info">
+              {% if user.roles[1] is defined %}Remove Admin{% else %}Make Admin{% endif %}
+          </button> {#== "ROLE_ADMIN"#}
+      </a>
+  
 
