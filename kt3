@@ -1,0 +1,26 @@
+xampp
+  https://www.apachefriends.org/index.html
+  - apache
+  - mySQL
+  - ? mercury
+ 
+create DB
+  php bin/console doctrine:database:create 
+  php bin/console doctrine:schema:update --force
+  
+.htaccess bestand in de root van het project
+
+  https://stackoverflow.com/questions/23635746/htaccess-redirect-from-site-root-to-public-folder-hiding-public-in-url
+  
+
+apache rooting
+   https://symfony.com/doc/current/setup/web_server_configuration.html
+   composer require symfony/apache-pack
+   
+   
+.env 
+  APP_ENV=dev -> APP_ENV=prod
+  php bin/console cache:clear
+
+  
+  
